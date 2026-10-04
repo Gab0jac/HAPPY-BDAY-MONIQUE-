@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: black;
+            font-family: Arial, sans-serif;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #scroll-container {
+            width: 100%;
+            will-change: transform;
+        }
+        .background {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            box-sizing: border-box;
+            padding: 20px;
+            transition: opacity 0.8s ease;
+        }
+        #custom-text {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-weight: 500;
+            max-width: 600px;
+            line-height: 1.5;
+            white-space: pre-line;
+            margin-bottom: 25px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+        #start-btn {
+            display: inline-block;
+            padding: 14px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 100000;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        #start-btn:hover {
+            background-color: white;
+            color: black;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay">
+        <div id="custom-text">Hey Monique sa pc mo buksan plz with sound
+
+Sorry kung medy panget, busy na ren eh...</div>
+        <button id="start-btn" type="button">Start</button>
+    </div>
+    <div id="scroll-container">
+        <img src="moniquey.png" class="background" id="bg-img">
+    </div>
+    <script>
+        if ("scrollRestoration" in history) {
+            history.scrollRestoration = "manual";
+        }
+        const audioFilePath = "moniquemusic.mp3"; 
+        const pixelsPerSecond = 3; 
+        const bgMusic = new Audio(audioFilePath);
+        bgMusic.loop = true;
+        const overlay = document.getElementById("overlay");
+        const startBtn = document.getElementById("start-btn");
+        const scrollContainer = document.getElementById("scroll-container");
+        let currentY = 0;
+        let lastTimestamp = null;
+        let scrollInterval = null;
+        startBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            bgMusic.play().catch(error => {
+                console.error("Audio play error:", error);
+            });
+            overlay.style.opacity = "0";
+            setTimeout(() => {
+                overlay.style.display = "none";
+                const maxScroll = scrollContainer.scrollHeight - window.innerHeight;
+                lastTimestamp = performance.now();
+                scrollInterval = setInterval(() => {
+                    const now = performance.now();
+                    let deltaTime = (now - lastTimestamp) / 1000;
+                    if (deltaTime > 0.1) deltaTime = 0.1;
+                    lastTimestamp = now;
+                    currentY += pixelsPerSecond * deltaTime;
+                    if (currentY >= maxScroll) {
+                        currentY = maxScroll;
+                        scrollContainer.style.transform = `translateY(-${currentY}px)`;
+                        clearInterval(scrollInterval);
+                        scrollContainer.style.transform = "none";
+                        document.body.style.overflow = "auto";
+                        document.documentElement.style.overflow = "auto";
+                        window.scrollTo(0, maxScroll);
+                    } else {
+                        scrollContainer.style.transform = `translateY(-${currentY}px)`;
+                    }
+                }, 16);
+            }, 800);
+        });
+    </script>
+</body>
+</html>
